@@ -1,0 +1,28 @@
+# Build artifacts
+.argt_build_done
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env.local
+.env.*.local
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Results
+results/
+*.jsonl
+proof_report.md
