@@ -72,8 +72,8 @@ class AgentOrchestrator:
         self._sessions: dict[str, list[AgentMessage]] = {}
         # Supervisor anomaly counter
         self._anomaly_count: dict[str, int] = {}
-        # Escalation state
-        self._escalation_active = False
+        # Escalation state (per-session to prevent cross-session interference)
+        self._escalation_active: set[str] = set()
         self._escalation_context: dict = {}
 
         # Seed research knowledge base
@@ -329,14 +329,8 @@ class AgentOrchestrator:
 
     async def _research_process(self, msg: AgentMessage, session_id: str) -> AgentResponse:
         """Research Agent: RAG-backed knowledge retrieval."""
-        # Retrieve relevant documents
-        relevant_docs = self._search_knowledge(msg.content)
-
-        # Filter by classification level
-        accessible_docs = [
-            d for d in relevant_docs
-            if d["classification"] in ("INTERNAL", "PUBLIC")
-        ]
+        # Retrieve relevant documents (_search_knowledge handles classification)
+        accessible_docs = self._search_knowledge(msg.content)
 
         # Build context from retrieved docs
         if accessible_docs:
@@ -536,9 +530,9 @@ class AgentOrchestrator:
         )
 
         # Check if escalation threshold is met
-        if anomaly_count >= 3 and not self._escalation_active:
+        if anomaly_count >= 3 and session_id not in self._escalation_active:
             # Trigger Level 2 escalation
-            self._escalation_active = True
+            self._escalation_active.add(session_id)
             self.audit.append("ESCALATION_TRIGGERED", "supervisor",
                               f"Level 2 escalation: {anomaly_count} anomalies detected",
                               severity="CRITICAL")
@@ -567,7 +561,7 @@ class AgentOrchestrator:
                 f"Original inquiry: {msg.content}"
             )
 
-            self._escalation_active = False
+            self._escalation_active.discard(session_id)
             self.memory.write("supervisor", f"escalation_{msg.chain_id}",
                               "Level 2 escalation completed. Result: filtered.",
                               "supervisor")
