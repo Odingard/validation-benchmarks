@@ -1,5 +1,7 @@
 # Build artifacts
 .argt_build_done
+# OOB collector hit logs (runtime artifacts, per-target)
+_collector/
 *.pyc
 __pycache__/
 *.egg-info/
@@ -22,7 +24,7 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Results
-results/
-*.jsonl
-proof_report.md
+# Results — keep committed validation runs; ignore ad-hoc local scan outputs
+results/*
+!results/proof_report.md
+!results/ollama-llama3.2-3b-2026-06-20/

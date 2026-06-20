@@ -1,4 +1,4 @@
-.PHONY: build clean run stop list
+.PHONY: build clean run stop check list
 
 
 TARGET_PATH=targets/$(TARGET)
@@ -23,6 +23,9 @@ run: check-env check_valid_target
 
 stop: check-env check_valid_target
 	@make -C $(TARGET_PATH) stop
+
+check: check-env check_valid_target
+	@make -C $(TARGET_PATH) check
 
 list:
 	@echo "Available targets:"
